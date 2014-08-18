@@ -21,13 +21,30 @@
 # CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) 
 # ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE 
 # POSSIBILITY OF SUCH DAMAGE.
-use Test::More tests => 2;
-use v5.12;
+use Test::More;
+use v5.14;
+use Device::WebIO;
+use Device::WebIO::GStreamerVideo::V4l2;
 
-if( `gst-launch-1.0 --version` eq '' ) {
-    BAIL_OUT( "Need gst-launch-1.0 in your PATH.  If you have not installed GStreamer 1.0, please do so." );
+if( -e '/dev/video0' ) {
+    plan tests => 4;
+}
+else {
+    plan skip_all => 'Need at least one /dev/video* device to test';
 }
 
 
-use_ok( 'Device::WebIO::GStreamerVideo' );
-use_ok( 'Device::WebIO::GStreamerVideo::V4l2' );
+my $vid = Device::WebIO::GStreamerVideo::V4l2->new({
+});
+my $webio = Device::WebIO->new;
+$webio->register( 'foo', $vid );
+
+ok( $vid->does( 'Device::WebIO::Device' ), "Does Device role" );
+ok( $vid->does( 'Device::WebIO::Device::VideoOutput' ),
+    "Does VideoOutput role" );
+ok( $vid->does( 'Device::WebIO::GStreamerVideo' ),
+    "Does GStreamerVideo role" );
+
+my $fh = $webio->vid_stream( 'foo', 0, 'video/avi' );
+cmp_ok( ref($fh), 'eq', 'GLOB', "Got video stream" );
+close $fh;
