@@ -27,7 +27,7 @@ use Device::WebIO;
 use Device::WebIO::GStreamerVideo::V4l2;
 
 if( -e '/dev/video0' ) {
-    plan tests => 4;
+    plan tests => 5;
 }
 else {
     plan skip_all => 'Need at least one /dev/video* device to test';
@@ -46,5 +46,9 @@ ok( $vid->does( 'Device::WebIO::GStreamerVideo' ),
     "Does GStreamerVideo role" );
 
 my $fh = $webio->vid_stream( 'foo', 0, 'video/avi' );
-cmp_ok( ref($fh), 'eq', 'GLOB', "Got video stream" );
+cmp_ok( ref($fh), 'eq', 'GLOB', "Got AVI video stream" );
+close $fh;
+
+$fh = $webio->vid_stream( 'foo', 0, 'video/h264' );
+cmp_ok( ref($fh), 'eq', 'GLOB', "Got h.264 video stream" );
 close $fh;

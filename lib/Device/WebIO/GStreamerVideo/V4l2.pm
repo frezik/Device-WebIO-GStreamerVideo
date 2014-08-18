@@ -131,8 +131,13 @@ sub vid_stream
             . " lamemp3enc !"
             . " mux.";
     }
+    elsif( $type eq 'video/h264' ) {
+        $exec = "gst-launch-1.0 v4l2src device=/dev/video$pin !"
+            . " queue !"
+            . " 'video/x-raw,width=$width,height=$height,framerate=$fps/1' !"
+            . " xvimagesink sync=false";
+    }
 
-warn "Executing: $exec\n";
     open( $fh, '-|', $exec )
         or die "Can't execute '$exec': $!\n";
     return $fh;
